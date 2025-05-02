@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gravity Forms FlatPickr Date Field
  * Description: Adds an advanced date field to Gravity Forms using Flatpickr with blackout dates, repeating blackout days, and interdependent pickers.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Nic Scott
  */
 

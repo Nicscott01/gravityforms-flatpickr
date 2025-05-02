@@ -1,0 +1,10 @@
+{
+    "name":"nicscott01/gravityforms-flatpickr",
+    "description": "A Gravity Forms add-on for the Flatpickr date picker",
+    "type":"wordpress-plugin",
+    "require": {
+        "php": ">=8.3"
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev" 
+}
