@@ -4,6 +4,9 @@ This repo is for a Wordpress plugin that extends the plugin [Gravity Forms](http
 In addition to just having the FlatPickr instance, you can link multiple Flatpickr fields by referencing a field ID in a companion field. This is useful for setting start and end dates, where the start date influences the beginning date on the end date calendar.
 
 ## Changelog
+### [1.0.2]
+- Add placeholder field/text
+
 ### [1.0.1]
 - Add composer.json for Bedrock support
 

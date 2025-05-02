@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gravity Forms FlatPickr Date Field
  * Description: Adds an advanced date field to Gravity Forms using Flatpickr with blackout dates, repeating blackout days, and interdependent pickers.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Nic Scott
  */
 
@@ -46,6 +46,7 @@ class GF_Field_Advanced_Date extends GF_Field {
             'visibility_setting',
             'conditional_logic_field_setting',
             'error_message_setting',
+            'placeholder_setting',
             'rules_setting', // Standard "Required" checkbox
             'size_setting',
             // Custom field settings (defined by you).
@@ -130,6 +131,7 @@ class GF_Field_Advanced_Date extends GF_Field {
             data-calendar-mode="<?php echo esc_attr( $calendar_mode ); ?>"
             value="<?php echo esc_attr( $value ); ?>"
             <?php echo $tabindex; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            placeholder="<?php echo esc_attr( empty( $this->placeholder ) ? 'Click to select from calendar' : $this->placeholder ); ?>"
         />
         <?php
         return ob_get_clean();
