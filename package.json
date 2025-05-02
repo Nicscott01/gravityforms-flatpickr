@@ -1,0 +1,19 @@
+{
+    "name": "gf-advanced-date-field",
+    "version": "1.0.0",
+    "description": "A Gravity Forms field add-on using Flatpickr for advanced date picking.",
+    "main": "index.js",
+    "scripts": {
+      "build": "npm run copy:flatpickrjs && npm run copy:flatpickrcss",
+      "copy:flatpickrjs": "mkdir -p assets/js && cp node_modules/flatpickr/dist/flatpickr.min.js assets/js/",
+      "copy:flatpickrcss": "mkdir -p assets/css && cp node_modules/flatpickr/dist/flatpickr.min.css assets/css/",
+      "compilecsso": "stylus src/style/flatpickr-cssvars.styl -o assets/css/flatpickr.min.css",
+      "compilecss": "sass src/style/flatpickr-cssvars.scss assets/css/flatpickr.min.css"
+    },
+    "author": "Your Name",
+    "license": "ISC",
+    "dependencies": {
+      "flatpickr": "^4.6.13"
+    }
+  }
+  

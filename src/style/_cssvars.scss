@@ -1,0 +1,44 @@
+:root {
+  --fpgf-bezier: cubic-bezier(0.23, 1, 0.32, 1);
+  --fpgf-slide-time: 400ms;
+
+  /* Calendar Dimensions */
+  --fpgf-day-size: 39px;
+  --fpgf-padding: calc(var(--fpgf-day-size) / 16);
+  --fpgf-day-margin: 2px;
+  --fpgf-days-width: calc(var(--fpgf-day-size) * 7 + var(--fpgf-day-margin) * 14 + var(--fpgf-padding) * 2 + 2px);
+  --fpgf-calendar-width: var(--fpgf-days-width);
+
+  --fpgf-month-nav-height: 34px;
+  --fpgf-weekdays-height: 28px;
+  --fpgf-time-height: 40px;
+
+  /* Colors */
+  --fpgf-calendar-background: #ffffff;
+  --fpgf-calendar-border-color: #e6e6e6;
+
+  --fpgf-month-foreground: rgba(0, 0, 0, 0.9);
+  --fpgf-arrow-hover-color: #f64747;
+
+  --fpgf-month-background: transparent;
+
+  --fpgf-weekdays-background: transparent;
+  --fpgf-weekdays-foreground: rgba(0, 0, 0, 0.54);
+
+  --fpgf-day-foreground: 57, 57, 57;
+  --fpgf-day-hover-background: #e6e6e6;
+
+  --fpgf-today-color: #959ea9;
+  --fpgf-selected-day-background: #569FF7;
+
+  --fpgf-inverted-bg: invert(var(--fpgf-calendar-background));
+
+  --fpgf-selected-day-foreground: #fff;
+  --fpgf-today-fg-color: #fff;
+
+  --fpgf-disabled-border-color: transparent;
+}
+
+
+//$noCalendarBorder: false;
+//$disabled_border_color: false;
