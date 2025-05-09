@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gravity Forms FlatPickr Date Field
  * Description: Adds an advanced date field to Gravity Forms using Flatpickr with blackout dates, repeating blackout days, and interdependent pickers.
- * Version: 1.0.2
+ * Version: 1.1.0
  * Author: Nic Scott
  */
 
@@ -287,6 +287,12 @@ private function compute_us_holidays( $selected_holidays ) {
                     break;
                 }
 
+                case 'easter_sunday': {
+                    $easter = new DateTime('@' . easter_date( $year ));
+                    $all_holiday_dates[] = $easter->format('Y-m-d');
+                    break;
+                }
+
                 case 'memorial': {
                     $d = $lastWeekdayOfMonth($year, 5, 1);
                     $all_holiday_dates[] = $fmt($d);
@@ -413,19 +419,12 @@ add_action( 'gform_loaded', function() {
 /**
  * 3. Enqueue scripts on front-end form load
  */
-add_action( 'wp_enqueue_scripts', function() {
+add_action( 'gform_enqueue_scripts', function() {
     // Just instantiate the class to call enqueue_scripts
     $field = new GF_Field_Advanced_Date();
     $field->enqueue_scripts();
 } );
 
-/**
- * 4. Enqueue scripts in the admin as well (for form preview, etc.)
- */
-add_action( 'admin_enqueue_scripts', function() {
-    $field = new GF_Field_Advanced_Date();
-    $field->enqueue_scripts();
-} );
 
 /**
  * 5. (Optional) Add the HTML for the custom field settings in the GF editor sidebar.
@@ -493,6 +492,7 @@ add_action( 'gform_field_standard_settings', function( $position, $form_id ) {
                 'mlk'         => "MLK Day (3rd Monday in Jan)",
                 'presidents'  => "Presidents Day (3rd Monday in Feb)",
                 'good_friday' => "Good Friday",
+                'easter_sunday'  => "Easter Sunday",
                 'memorial'    => "Memorial Day (Last Monday in May)",
                 'juneteenth'  => "Juneteenth (June 19)",
                 'july4'       => "Independence Day (July 4)",
