@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Gravity Forms FlatPickr Date Field
  * Description: Adds an advanced date field to Gravity Forms using Flatpickr with blackout dates, repeating blackout days, and interdependent pickers.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Nic Scott
  */
 
@@ -80,20 +80,7 @@ class GF_Field_Advanced_Date extends GF_Field {
         $calendar_mode = isset( $this->calendar_mode ) ? $this->calendar_mode : 'single';
 
 
-        // Original comma-separated dates entered by user
-        $raw_blackout_dates = isset( $this->blackout_dates ) ? $this->blackout_dates : '';
-        // Convert to array (split by comma)
-        $blackout_dates = array_filter( array_map( 'trim', explode( ',', $raw_blackout_dates ) ) );
-
-        // If US holiday keys selected, compute them as YYYY-MM-DD and merge
-        if ( ! empty( $this->us_holidays ) ) {
-            $holiday_dates = $this->compute_us_holidays( $this->us_holidays ); 
-            // Merge with existing
-            $blackout_dates = array_merge( $blackout_dates, $holiday_dates );
-        }
-
-        // Re-combine as comma-separated if that's how you're passing it to JS
-        $final_blackout_dates = json_encode( $blackout_dates );
+        $blackout_dates = wp_json_encode( $this->get_blackout_dates() );
         
 
 
@@ -123,7 +110,7 @@ class GF_Field_Advanced_Date extends GF_Field {
             name="<?php echo esc_attr( $input_name ); ?>"
             id="input_<?php echo absint( $form['id'] ); ?>_<?php echo absint( $field_id ); ?>"
             class="gform_flatpickr_date <?php echo $css_class; ?>"
-            data-blackout-dates="<?php echo esc_attr( $final_blackout_dates ); ?>"
+            data-blackout-dates="<?php echo esc_attr( $blackout_dates ); ?>"
             data-blackout-days="<?php echo esc_attr( $blackout_days ); ?>"
             data-linked-picker="<?php echo esc_attr( $linked_picker ); ?>"
             data-min-date-offset="<?php echo esc_attr( $min_date_offset ); ?>"
@@ -362,15 +349,89 @@ private function compute_us_holidays( $selected_holidays ) {
 
 
     /**
-     * Validate user-inputted value (e.g., ensure date is not in blackout list, etc.).
+     * Return date strings and inclusive ranges in Flatpickr's disable format.
+     */
+    private function get_blackout_dates() {
+        $blackouts = [];
+
+        foreach ( explode( ',', $this->blackout_dates ?? '' ) as $entry ) {
+            $entry = trim( $entry );
+            if ( '' === $entry ) {
+                continue;
+            }
+
+            $parts = preg_split( '/\bto\b/i', $entry, 2 );
+            if ( 1 === count( $parts ) ) {
+                $blackouts[] = $entry;
+                continue;
+            }
+
+            $from = trim( $parts[0] );
+            $to = trim( $parts[1] );
+            if ( self::is_iso_date( $from ) && self::is_iso_date( $to ) && $from <= $to ) {
+                $blackouts[] = [ 'from' => $from, 'to' => $to ];
+            }
+        }
+
+        if ( ! empty( $this->us_holidays ) ) {
+            $blackouts = array_merge( $blackouts, $this->compute_us_holidays( $this->us_holidays ) );
+        }
+
+        return $blackouts;
+    }
+
+    private static function is_iso_date( $date ) {
+        return preg_match( '/^(\d{4})-(\d{2})-(\d{2})$/D', $date, $parts )
+            && checkdate( (int) $parts[2], (int) $parts[3], (int) $parts[1] );
+    }
+
+    /**
+     * Reject selections that overlap configured blackout dates.
      */
     public function validate( $value, $form ) {
-        // Example: Basic check if value is empty but required
         if ( $this->isRequired && rgblank( $value ) ) {
             $this->failed_validation  = true;
             $this->validation_message = esc_html__( 'Please select a date.', 'gravityforms' );
+            return;
         }
-        // You could also parse $value and check it against $this->blackout_dates, etc.
+
+        if ( ! is_string( $value ) || '' === $value ) {
+            return;
+        }
+
+        $dates = preg_split( '/\s*(?:,|\bto\b)\s*/i', trim( $value ) );
+        $dates = array_filter( $dates, [ self::class, 'is_iso_date' ] );
+        if ( empty( $dates ) ) {
+            return;
+        }
+
+        $selections = [];
+        if ( 'range' === ( $this->calendar_mode ?? 'single' ) && 2 === count( $dates ) ) {
+            $selections[] = [ min( $dates ), max( $dates ) ];
+        } else {
+            foreach ( $dates as $date ) {
+                $selections[] = [ $date, $date ];
+            }
+        }
+
+        foreach ( $this->get_blackout_dates() as $blackout ) {
+            if ( is_array( $blackout ) ) {
+                $from = $blackout['from'];
+                $to = $blackout['to'];
+            } elseif ( self::is_iso_date( $blackout ) ) {
+                $from = $to = $blackout;
+            } else {
+                continue;
+            }
+
+            foreach ( $selections as [ $start, $end ] ) {
+                if ( $start <= $to && $end >= $from ) {
+                    $this->failed_validation  = true;
+                    $this->validation_message = esc_html__( 'That date is unavailable. Please choose another date.', 'gravityforms' );
+                    return;
+                }
+            }
+        }
     }
 
     /**
@@ -448,9 +509,12 @@ add_action( 'gform_field_standard_settings', function( $position, $form_id ) {
         </li>
         <li class="blackout_dates_setting field_setting">
             <label for="field_blackout_dates" class="section_label">
-                <?php esc_html_e( 'Blackout Dates (comma separated; 2025-01-08)', 'gravityforms' ); ?>
+                <?php esc_html_e( 'Blackout Dates', 'gravityforms' ); ?>
             </label>
-            <input type="text" id="field_blackout_dates" oninput="SetFieldProperty('blackout_dates', this.value)" />
+            <input type="text" id="field_blackout_dates" aria-describedby="field_blackout_dates_help" oninput="SetFieldProperty('blackout_dates', this.value)" />
+            <p id="field_blackout_dates_help" class="description">
+                <?php esc_html_e( 'Separate dates and ranges with commas. For example, 2026-11-26, 2026-12-22 to 2027-03-02. A range includes both dates.', 'gravityforms' ); ?>
+            </p>
         </li>
 
         <li class="blackout_days_setting field_setting">

@@ -4,6 +4,10 @@ This repo is for a Wordpress plugin that extends the plugin [Gravity Forms](http
 In addition to just having the FlatPickr instance, you can link multiple Flatpickr fields by referencing a field ID in a companion field. This is useful for setting start and end dates, where the start date influences the beginning date on the end date calendar.
 
 ## Changelog
+### [1.2.0]
+- Allow inclusive ranges alongside single dates in Blackout Dates, for example `2026-11-26, 2026-12-22 to 2027-03-02`.
+- Validate configured blackout dates when Gravity Forms processes a selection.
+
 ### [1.1.0] 
 - Add easter sunday
 - Fix enqueue of script to occur only when form is printed on page
